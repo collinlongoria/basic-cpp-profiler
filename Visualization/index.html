@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="description" content="">
+    <title>Capstone Project - Project 7 - CS399 Data Visualization - 2025.04.16</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+  <div class="graph-container">
+    <h2>Function Call Tree</h2>
+    <svg class="graph" id="tree" width="600" height="400"></svg>
+  </div>
+
+  <div class="graph-container">
+    <h2>Nested Hierarchical Function</h2>
+    <h4>&nbsp;&nbsp;&nbsp;&nbsp;Click on the Bars to expand into its nests. Click on the background to go back.</h4>
+    <svg class="graph" id="h_bar" width="600" height="400"></svg>
+  </div>
+
+  <div id="tooltip" style="position: absolute; opacity: 0; background-color: #eee; padding: 5px; border-radius: 4px; pointer-events: none;"></div>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
