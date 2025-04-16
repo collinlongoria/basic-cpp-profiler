@@ -206,41 +206,18 @@ let barHeight = barStep - barPadding;
 
 // helper function to make data into a full hierarchy under a fake root
 function buildHierarchy(data) {
-  const seen = new Set();
-
-  function recurse(name, node) {
-    const fnData = data.functions[name] || {};
-    const children = [];
-
-    // Each key inside this node is a nested function name
-    for (const [childName, childNode] of Object.entries(node)) {
-      seen.add(childName);
-      children.push(recurse(childName, childNode));
-    }
-
-    return {
-      name,
-      value: fnData.totalTimeMs || 0,
-      children: children.length > 0 ? children : undefined
-    };
-  }
-
-  const children = [];
-
-  for (const [name, node] of Object.entries(data.callGraph)) {
-    seen.add(name);
-    children.push(recurse(name, node));
-  }
-
-  // Orphaned functions (not in callGraph)
-  for (const [name, fnData] of Object.entries(data.functions)) {
-    if (!seen.has(name)) {
-      children.push({
-        name,
-        value: fnData.totalTimeMs
-      });
-    }
-  }
+  // For each function, create a node whose children are its individual-call durations
+  const children = Object.entries(data.functions).map(([name, fnData]) => ({
+    name,
+    value: fnData.totalTimeMs || 0,
+    // build one child per invocation (so you can drill down)
+    children: Array.isArray(fnData.durationsMs)
+      ? fnData.durationsMs.map((duration, i) => ({
+          name: `${name} call ${i + 1}`,
+          value: duration
+        }))
+      : undefined
+  }));
 
   return {
     name: "main",
