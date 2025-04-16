@@ -1,6 +1,3 @@
-// Julia Moraes and Collin Longoria
-// CS399 Spring 2025
-
 //GLOBAL STUFF //////////////////////////////////
 const tooltip = d3.select("#tooltip");
 /////////////////////////////////////////////////
@@ -13,85 +10,15 @@ const svg1 = d3.select("#tree")
 
 //Read from output to make tree
 d3.json("data/profile_output.json").then(raw => {
-  const treeData = callGraphToTree(raw.callGraph); // start collapsed
-  buildTree(treeData);
-  expandButton(raw.callGraph);
-  
+  //const treeData = callGraphToTree(raw.callGraph); // start collapsed
+  buildTree(raw.callGraph, false);  
 
 }).catch(console.error);
 
-//What the expand Button does
-function expandButton(data) {
-
-  // Append a button to the SVG using foreignObject
-  svg1.append("foreignObject")
-    .attr("x", 10)
-    .attr("y", 10)
-    .attr("width", 100)
-    .attr("height", 40)
-    .on("mouseover", function(event, d) {
-      tooltip.transition().duration(200).style("opacity", 1);
-      tooltip.html(`Expand Graph`)
-             .style("left", (event.pageX + 10) + "px")
-             .style("top", (event.pageY - 28) + "px");
-    })
-    .on("mousemove", function(event) {
-      tooltip.style("left", (event.pageX + 10) + "px")
-             .style("top", (event.pageY - 28) + "px");
-    })
-    .on("mouseout", function() {
-      tooltip.transition().duration(300).style("opacity", 0);
-    })
-    .append("xhtml:button")
-    .style("width", "80px")
-    .style("height", "30px")
-    .style("font-size", "12px")
-    .text("Expand")
-    .on("click", () => { //go to expanded graph
-      svg1.selectAll("*").remove();
-      const treeData = callGraphToTreeWithFullRepeats(data); // transform
-      buildTree(treeData);
-      collapseButton(data);
-    }); 
-}
-
-//What the collapse Button does
-function collapseButton(data) {
-
-  // Append a button to the SVG using foreignObject
-  svg1.append("foreignObject")
-    .attr("x", 10)
-    .attr("y", 10)
-    .attr("width", 100)
-    .attr("height", 40)
-    .on("mouseover", function(event, d) {
-      tooltip.transition().duration(200).style("opacity", 1);
-      tooltip.html(`Collapse Graph`)
-             .style("left", (event.pageX + 10) + "px")
-             .style("top", (event.pageY - 28) + "px");
-    })
-    .on("mousemove", function(event) {
-      tooltip.style("left", (event.pageX + 10) + "px")
-             .style("top", (event.pageY - 28) + "px");
-    })
-    .on("mouseout", function() {
-      tooltip.transition().duration(300).style("opacity", 0);
-    })
-    .append("xhtml:button")
-    .style("width", "80px")
-    .style("height", "30px")
-    .style("font-size", "12px")
-    .text("Collapse")
-    .on("click", () => { //go to collapsed graph
-      svg1.selectAll("*").remove();
-      const treeData = callGraphToTree(data); // transform
-      buildTree(treeData);
-      expandButton(data);
-    }); 
-}
 
 // builds the tree according to the data
-function buildTree(treeData) {
+function buildTree(data, expand) {
+  const treeData = expand ? callGraphToTreeWithFullRepeats(data) : callGraphToTree(data); // transform
   const root = d3.hierarchy(treeData);
   const treeLayout = d3.tree().size([height, width - 150]);
   treeLayout(root);
@@ -106,7 +33,25 @@ function buildTree(treeData) {
     .attr("d", d3.linkHorizontal()
       .x(d => d.y + fakeMargin)
       .y(d => d.x)
-    );
+    )
+    .on("mouseover", function(event, d) {
+      tooltip.transition().duration(200).style("opacity", 1);
+      tooltip.html(expand ? 'Collapse' : `Expand`)
+             .style("left", (event.pageX + 10) + "px")
+             .style("top", (event.pageY - 28) + "px");
+    })
+    .on("mousemove", function(event) {
+      tooltip.style("left", (event.pageX + 10) + "px")
+             .style("top", (event.pageY - 28) + "px");
+    })
+    .on("mouseout", function() {
+      tooltip.transition().duration(300).style("opacity", 0);
+    })
+    .on("click", () => { //go to expanded graph
+      svg1.selectAll("*").remove();
+      tooltip.transition().duration(300).style("opacity", 0);
+      buildTree(data, !expand);
+    });
 
   // Nodes
   const node = svg1.selectAll("g.node")
@@ -118,7 +63,7 @@ function buildTree(treeData) {
   node.append("circle").attr("r", 5)
     .on("mouseover", function(event, d) {
       tooltip.transition().duration(200).style("opacity", 1);
-      tooltip.html(`Function Call Graph`)
+      tooltip.html( expand ? 'Collapse' : `Expand`)
             .style("left", (event.pageX + 10) + "px")
             .style("top", (event.pageY - 28) + "px");
     })
@@ -128,14 +73,19 @@ function buildTree(treeData) {
     })
     .on("mouseout", function() {
       tooltip.transition().duration(300).style("opacity", 0);
-    });
+    })
+    .on("click", () => { //go to expanded graph
+      svg1.selectAll("*").remove();
+      tooltip.transition().duration(300).style("opacity", 0);
+      buildTree(data, !expand);
+    }); 
 
   node.append("text")
     .attr("dy", "0.31em")
     .attr("x", d => d.children ? -10 : 10)
     .on("mouseover", function(event, d) {
       tooltip.transition().duration(200).style("opacity", 1);
-      tooltip.html(`Function Call Graph`)
+      tooltip.html(expand ? 'Collapse' : `Expand`)
              .style("left", (event.pageX + 10) + "px")
              .style("top", (event.pageY - 28) + "px");
     })
@@ -145,6 +95,11 @@ function buildTree(treeData) {
     })
     .on("mouseout", function() {
       tooltip.transition().duration(300).style("opacity", 0);
+    })
+    .on("click", () => { //go to expanded graph
+      svg1.selectAll("*").remove();
+      tooltip.transition().duration(300).style("opacity", 0);
+      buildTree(data, !expand);
     })
     .style("text-anchor", d => d.children ? "end" : "start")
     .text(d => d.data.name);
