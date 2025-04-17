@@ -4,6 +4,11 @@
 #include <vector>
 #include <chrono>
 #include <cstdlib>
+#include <random>
+
+std::random_device rd;
+std::mt19937 rng(rd());
+std::uniform_int_distribution<int> dist(1, 3);
 
 // === Feature Toggles ===
 #define TEST_TIME_TRACKING        true
@@ -24,6 +29,59 @@ void DoWork() {
     PROFILE_FUNCTION();
     NestedWork();
     std::this_thread::sleep_for(std::chrono::milliseconds(30));
+}
+
+void NestedWork2() {
+    PROFILE_FUNCTION();
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(17));
+
+}
+
+void NestedWork3() {
+    PROFILE_FUNCTION();
+
+    int result1 = dist(rng);
+    int result2 = dist(rng);
+
+    int result3 = result1 * result2 + (result2 * 10);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(result3));
+}
+
+void NestedWork5() {
+    PROFILE_FUNCTION();
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(9));
+}
+
+void NestedWork4() {
+    PROFILE_FUNCTION();
+
+    NestedWork5();
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(9));
+}
+
+
+
+void DoWorkRandom() {
+    PROFILE_FUNCTION();
+
+    int result = dist(rng);
+
+    switch (result) {
+    case 1:
+    default:
+        for (int i = 0; i < 2; ++i) NestedWork2();
+        break;
+    case 2:
+        for(int i = 0; i< 1; ++i) NestedWork3();
+        break;
+    case 3:
+        NestedWork4();
+        break;
+    }
 }
 #endif
 
@@ -52,6 +110,7 @@ void BackgroundThread() {
 #endif
 
 int main() {
+
     std::cout << "Starting profiler test..." << std::endl;
 
     Profiler::SetOutputPath("profile_output.json");
@@ -72,6 +131,11 @@ int main() {
 #if TEST_TIME_TRACKING || TEST_CALL_GRAPH || TEST_DURATION_HISTOGRAM
     for (int i = 0; i < 5; ++i)
         DoWork();
+
+    for (int i = 0; i < 8; ++i)
+        DoWorkRandom();
+
+    NestedWork5();
 #endif
 
 #if TEST_ALLOCATION_TRACKING

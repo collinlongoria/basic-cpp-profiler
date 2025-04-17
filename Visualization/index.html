@@ -10,13 +10,15 @@
 <body>
   <div class="graph-container">
     <h2>Function Call Tree</h2>
-    <svg class="graph" id="tree" width="600" height="400"></svg>
+    <svg class="graph" id="tree" width="800" height="400"></svg>
   </div>
 
   <div class="graph-container">
     <h2>Nested Hierarchical Function</h2>
     <h4>&nbsp;&nbsp;&nbsp;&nbsp;Click on the Bars to expand into its nests. Click on the background to go back.</h4>
-    <svg class="graph" id="h_bar" width="600" height="400"></svg>
+    <div id="bar-container" style="height:400px;overflow-y:auto;">
+      <svg class="graph" id="h_bar"  width="800" height="400"></svg>
+    </div>
   </div>
 
   <div id="tooltip" style="position: absolute; opacity: 0; background-color: #eee; padding: 5px; border-radius: 4px; pointer-events: none;"></div>
